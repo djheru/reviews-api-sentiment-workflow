@@ -19,11 +19,13 @@ When a user calls the `putReview` mutation, the AppSync API directly invokes the
 - Save the ID, the review, and the sentiment rating in a database
 
 ---
+
 ### Diagram
 
 ![System Diagram](/diagram.png)
 
 ---
+
 ## Environment Setup
 
 ### Sign up for AWS
@@ -59,6 +61,18 @@ npm i -D \
   prettier
 ```
 
+## Step Functions Sentiment Stack
+
+### EventBridge Event Bus
+
+Amazon EventBridge is a managed serverless event bus service used to connect applications with data from a variety of sources. EventBridge consists of 4 main features:
+
+1. Event - Represents a change in state in your application or AWS environment
+1. EventBus - Receives events from your application or AWS services
+1. Rule - Matches incoming events and routes them to Targets for processing
+1. Target - Processes events (e.g. Lambda/Step fns, ECS Tasks, SNS Topics, etc)
+
+In our application, the AppSync GraphQL API will dispatch an Event when a new review is submitted. This Event matches a Rule that we will configure, and that Rule will route the event to a Target that invokes the Step Function workflow.
 
 This is a blank project for TypeScript development with CDK.
 
@@ -66,9 +80,9 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## Useful commands
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+- `npm run build` compile typescript to js
+- `npm run watch` watch for changes and compile
+- `npm run test` perform the jest unit tests
+- `cdk deploy` deploy this stack to your default AWS account/region
+- `cdk diff` compare deployed stack with current state
+- `cdk synth` emits the synthesized CloudFormation template
