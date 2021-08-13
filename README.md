@@ -74,6 +74,19 @@ Amazon EventBridge is a managed serverless event bus service used to connect app
 
 In our application, the AppSync GraphQL API will dispatch an Event when a new review is submitted. This Event matches a Rule that we will configure, and that Rule will route the event to a Target that invokes the Step Function workflow.
 
+### Sentiment Analysis with Comprehend
+
+Amazon Comprehend is a managed Natural Language Processing (NLP) service that evaluates text to gain insights into the content. Some of the insights that Comprehend develops about a document include:
+
+1. Entities - Detects entities such as people, places, and locations in a document
+1. Key phrases - A document about a basketball game might return key phrases such as the team names, the venue name and the score
+1. PII - Analyzes documents to detect personal information that may identify an individual such as address, bank account number or phone number
+1. Language - Identifies the predominant language in a document
+1. Sentiment - Detects the emotional sentiment of a document (positive, negative, neutral or mixed)
+1. Syntax - Parses each word in the document and determines the part of speech (e.g. nouns, verbs, adjectives, pronouns, etc)
+
+In our application, we will use the Comprehend service to detect the sentiment of the submitted review, in order to alert a support team member about disgruntled customers.
+
 This is a blank project for TypeScript development with CDK.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
