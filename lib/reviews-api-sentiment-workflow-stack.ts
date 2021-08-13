@@ -27,6 +27,9 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
   // Step Function task to detect review sentiment
   public detectSentimentTask: LambdaInvoke;
 
+  // Step Function task to generate the ULID for the transaction
+  public generateUlidTask: LambdaInvoke;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -37,6 +40,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
   buildResources() {
     this.buildEventBus();
     this.buildSentimentLambda();
+    this.buildIdGeneratorLambda();
   }
 
   /**
@@ -86,6 +90,36 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
       lambdaFunction: sentimentLambda,
       // "$" represents the root of the JSON document the Step Function carries as its state
       resultPath: '$.sentimentResult',
+    });
+  }
+
+  /**
+   * Sets up a lambda function that uses the ulid library to generate a new ID
+   * for the review and sentiment analysis record
+   */
+  buildIdGeneratorLambda() {
+    const lambdaId = pascalCase(`${this.id}-ulid-lambda`);
+    const taskId = pascalCase(`${this.id}-ulid-task`);
+
+    // Lambda function to generate ID
+    const idGeneratorLambda = new NodejsFunction(this, lambdaId, {
+      functionName: lambdaId,
+      runtime: Runtime.NODEJS_12_X,
+      entry: 'src/generate-id.ts',
+      handler: 'handler',
+      memorySize: 128,
+      logRetention: RetentionDays.ONE_MONTH,
+      bundling: {
+        nodeModules: ['aws-sdk', 'ulid'],
+        externalModules: [],
+      },
+    });
+
+    // Use lambda as a Step Function Task
+    this.generateUlidTask = new LambdaInvoke(this, taskId, {
+      lambdaFunction: idGeneratorLambda,
+      // "$" represents the root of the JSON document the Step Function carries as its state
+      resultPath: '$.reviewId',
     });
   }
 }

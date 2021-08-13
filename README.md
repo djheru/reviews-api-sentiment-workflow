@@ -87,6 +87,19 @@ Amazon Comprehend is a managed Natural Language Processing (NLP) service that ev
 
 In our application, we will use the Comprehend service to detect the sentiment of the submitted review, in order to alert a support team member about disgruntled customers.
 
+### Generate Review ID with ULID Library
+
+ULIDs are unique identifiers that are similar to UUIDs. They consist of two base32-encoded numbers, a UNIX timestamp (millisecond precision) and a random number. The number portion is 48 bits, and the randomness part is 80 bits.
+
+UUIDs rely on timestamps or randomness, but ULIDs incorporate both, which provides the following properties:
+
+- They are sortable lexicographically (alphabetically)
+- Monotonically sortable (handles multiple IDs from the same millisecond)
+- 26 characters compared to UUIDs 36
+- Case-insensitive and URL safe
+
+In our application, we will use a Lambda function to generate a ULID as an identifier for the review and sentiment analysis workflow.
+
 This is a blank project for TypeScript development with CDK.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
