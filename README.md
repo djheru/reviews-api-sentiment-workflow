@@ -118,7 +118,7 @@ The Table's partition key will be the review ID, and it will contain attributes 
 
 The Table will also include a GSI (Global Secondary Index) that uses the sentiment value as the partition key. This is possible because GSIs do not require that the partition key be a unique value. This allows us to support "get reviews by sentiment" searches, which we will be using in the GraphQL queries
 
-### Send Email Notifications For Negative Reviews
+### Send Email Notifications for Negative Reviews
 
 Amazon Simple Email Service (SES) is a managed email platform allows you to send and receive email using your own email addresses and domains. This service allows you to use a managed email service with features like the following:
 
@@ -128,6 +128,17 @@ Amazon Simple Email Service (SES) is a managed email platform allows you to send
 - Trigger Lambda functions from email received events
 
 For our application, we will be sending an email to a single configured email address whenever there is a review with negative sentiment posted through the API. This requires us to first add the email address to the SES console and verify our control of it. Once the email address is verified, we can use SES to send emails on our behalf.
+
+### Orchestrate Workflows with Step Functions
+
+Amazon Step Functions is a workflow service used to orchestrate AWS services, automate business processes and build serverless applications. Workflows manage failures, retries, parallelization, service integrations and observability.
+
+For our application, we will be using Step Functions to manage the following 4 tasks:
+
+1. Detect the sentiment of the submitted review
+1. Generate an identifier for the request
+1. Save the review and sentiment in a database
+1. Send an email to support if the sentiment is negative
 
 This is a blank project for TypeScript development with CDK.
 

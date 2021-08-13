@@ -1,13 +1,16 @@
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb';
-import { EventBus } from '@aws-cdk/aws-events';
+import { EventBus, Rule } from '@aws-cdk/aws-events';
+import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
-import { RetentionDays } from '@aws-cdk/aws-logs';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import {
   Choice,
   Condition,
   JsonPath,
+  StateMachine,
+  StateMachineType,
   Succeed,
 } from '@aws-cdk/aws-stepfunctions';
 import {
@@ -15,7 +18,13 @@ import {
   DynamoPutItem,
   LambdaInvoke,
 } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core';
+import {
+  Construct,
+  Duration,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+} from '@aws-cdk/core';
 import { pascalCase } from 'change-case';
 import * as dotenv from 'dotenv';
 
@@ -53,6 +62,8 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
   // Choice condition to invoke sending the notification only if sentiment is negative
   public sendNotificationChoice: Choice;
 
+  public reviewWorkflow: StateMachine;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -66,6 +77,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
     this.buildIdGeneratorLambda();
     this.buildReviewsTable();
     this.buildSentimentNotificationLambda();
+    this.buildReviewWorkflow();
   }
 
   /**
@@ -252,5 +264,54 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
         this.sentimentNotificationTask
       )
       .otherwise(new Succeed(this, 'positiveSentiment'));
+  }
+
+  /**
+   * Instantiates the State Machine and defines the workflow steps. Sets up the
+   * trigger, linking it up to the event bus and events that will be dispatched
+   * by the AppSync API
+   */
+  buildReviewWorkflow() {
+    const workflowId = pascalCase(`${this.id}-workflow`);
+    const workflowLogsId = pascalCase(`${workflowId}-logs`);
+
+    // Fluent interface for defining the steps of the workflow
+    const workflowDefinition = this.detectSentimentTask
+      .next(this.generateUlidTask)
+      .next(this.saveReviewTask)
+      .next(this.sentimentNotificationTask);
+
+    // Instantiate the State Machine
+    this.reviewWorkflow = new StateMachine(this, workflowId, {
+      definition: workflowDefinition,
+      stateMachineType: StateMachineType.EXPRESS,
+      timeout: Duration.seconds(30),
+      logs: {
+        destination: new LogGroup(this, workflowLogsId, {
+          retention: RetentionDays.ONE_MONTH,
+        }),
+      },
+    });
+
+    // Permit the State Machine to write to DynamoDB table
+    this.reviewsTable.grantWriteData(this.reviewWorkflow);
+  }
+
+  /**
+   * Defines the event Rule that will invoke the step function
+   */
+  buildWorkflowTrigger() {
+    const triggerId = pascalCase(`${this.id}-workflow-trigger`);
+
+    // Trigger for state functions
+    const workflowTrigger = new SfnStateMachine(this.reviewWorkflow);
+
+    new Rule(this, triggerId, {
+      eventBus: this.reviewsEventBus,
+      targets: [workflowTrigger],
+      eventPattern: {
+        detailType: ['PutReview'], // This matches the value in request.vtl
+      },
+    });
   }
 }
