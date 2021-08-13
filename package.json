@@ -14,14 +14,33 @@
     "@aws-cdk/assert": "1.118.0",
     "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
-    "jest": "^26.4.2",
-    "ts-jest": "^26.2.0",
     "aws-cdk": "1.118.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^26.4.2",
+    "prettier": "^2.3.2",
+    "ts-jest": "^26.2.0",
     "ts-node": "^9.0.0",
     "typescript": "~3.9.7"
   },
   "dependencies": {
+    "@aws-cdk/aws-appsync": "^1.118.0",
+    "@aws-cdk/aws-dynamodb": "^1.118.0",
+    "@aws-cdk/aws-events": "^1.118.0",
+    "@aws-cdk/aws-events-targets": "^1.118.0",
+    "@aws-cdk/aws-iam": "^1.118.0",
+    "@aws-cdk/aws-lambda": "^1.118.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.118.0",
+    "@aws-cdk/aws-logs": "^1.118.0",
+    "@aws-cdk/aws-stepfunctions": "^1.118.0",
+    "@aws-cdk/aws-stepfunctions-tasks": "^1.118.0",
     "@aws-cdk/core": "1.118.0",
-    "source-map-support": "^0.5.16"
+    "aws-lambda": "^1.0.6",
+    "aws-sdk": "^2.967.0",
+    "change-case": "^4.1.2",
+    "dotenv": "^10.0.0",
+    "source-map-support": "^0.5.16",
+    "ulid": "^2.3.0"
   }
 }
