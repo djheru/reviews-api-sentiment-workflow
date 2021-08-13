@@ -100,6 +100,24 @@ UUIDs rely on timestamps or randomness, but ULIDs incorporate both, which provid
 
 In our application, we will use a Lambda function to generate a ULID as an identifier for the review and sentiment analysis workflow.
 
+### Save Data in DynamoDB Directly from Step Function
+
+AWS Step Functions have the ability to directly invoke several other AWS services, without needing to use a user-provided Lambda or other compute. For example, Step Functions can include a task that performs such actions as:
+
+- Triggering a CodeBuild job
+- Calling an API Gateway endpoint
+- Running an ECS Task
+- Creating an SQS message or SNS notification
+- Triggering a separate Step Function
+- Placing an EventBridge event on the event bus
+- CRUD operations on DynamoDB records
+
+In our application, we will use Step Functions tasks to write the review, sentiment, and ID to a DynamoDB table.
+
+The Table's partition key will be the review ID, and it will contain attributes storing the review text and the sentiment value (POSITIVE, NEGATIVE, NEUTRAL, MIXED)
+
+The Table will also include a GSI (Global Secondary Index) that uses the sentiment value as the partition key. This is possible because GSIs do not require that the partition key be a unique value. This allows us to support "get reviews by sentiment" searches, which we will be using in the GraphQL queries
+
 This is a blank project for TypeScript development with CDK.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
