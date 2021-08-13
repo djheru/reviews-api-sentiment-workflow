@@ -4,7 +4,12 @@ import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import { RetentionDays } from '@aws-cdk/aws-logs';
-import { JsonPath } from '@aws-cdk/aws-stepfunctions';
+import {
+  Choice,
+  Condition,
+  JsonPath,
+  Succeed,
+} from '@aws-cdk/aws-stepfunctions';
 import {
   DynamoAttributeValue,
   DynamoPutItem,
@@ -42,6 +47,12 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
   // Step Function task to save the data in DynamoDB
   public saveReviewTask: DynamoPutItem;
 
+  // Step function task to send the email for negative sentiment
+  public sentimentNotificationTask: LambdaInvoke;
+
+  // Choice condition to invoke sending the notification only if sentiment is negative
+  public sendNotificationChoice: Choice;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -54,6 +65,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
     this.buildSentimentLambda();
     this.buildIdGeneratorLambda();
     this.buildReviewsTable();
+    this.buildSentimentNotificationLambda();
   }
 
   /**
@@ -187,5 +199,58 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
       },
       resultPath: '$.reviewDataRecord',
     });
+  }
+
+  /**
+   * Builds a lambda function that will send an email to a configured user
+   * alerting them that a review with negative sentiment has been posted
+   */
+  buildSentimentNotificationLambda() {
+    const lambdaId = pascalCase(`${this.id}-notification-lambda`);
+    const taskId = pascalCase(`${this.id}-notification-task`);
+    const choiceId = pascalCase(`${this.id}-notification-choice`);
+
+    const notificationLambda = new NodejsFunction(this, lambdaId, {
+      functionName: lambdaId,
+      runtime: Runtime.NODEJS_12_X,
+      entry: 'src/sentiment-notification.ts',
+      handler: 'handler',
+      memorySize: 256,
+      logRetention: RetentionDays.ONE_MONTH,
+      bundling: {
+        nodeModules: ['aws-sdk'],
+        externalModules: [],
+      },
+    });
+    // Add environment variables with the configured email address
+    notificationLambda.addEnvironment('SENDER', SENDER);
+    notificationLambda.addEnvironment('RECIPIENT', RECIPIENT);
+
+    // Add a policy to give the lambda IAM permission to call the SES service
+    notificationLambda.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['ses:SendEmail'],
+        resources: ['*'],
+      })
+    );
+
+    // Step functions task to invoke the notification email
+    this.sentimentNotificationTask = new LambdaInvoke(this, taskId, {
+      lambdaFunction: notificationLambda,
+      resultPath: '$.notifyViaEmail',
+    });
+
+    // This task is only invoked if the sentiment is negative. This is how we configure
+    // conditional execution of the task
+    this.sendNotificationChoice = new Choice(this, choiceId)
+      .when(
+        Condition.stringEquals(
+          '$.sentimentResult.Payload.Sentiment',
+          'NEGATIVE'
+        ),
+        this.sentimentNotificationTask
+      )
+      .otherwise(new Succeed(this, 'positiveSentiment'));
   }
 }
