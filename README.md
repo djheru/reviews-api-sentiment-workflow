@@ -140,6 +140,8 @@ For our application, we will be using Step Functions to manage the following 4 t
 1. Save the review and sentiment in a database
 1. Send an email to support if the sentiment is negative
 
+## GraphQL Reviews API Stack
+
 ### Serverless GraphQL API with AppSync
 
 AWS AppSync is a managed service to help develop GraphQL APIs by connecting to data sources such as the following:
