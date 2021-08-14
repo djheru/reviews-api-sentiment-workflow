@@ -17,6 +17,7 @@ When a user calls the `putReview` mutation, the AppSync API directly invokes the
 - Check the sentiment of the review using AWS Comprehend service
 - Generate a unique ID for the review
 - Save the ID, the review, and the sentiment rating in a database
+- If the review sentiment is negative, send a notification email to a configured account
 
 ---
 

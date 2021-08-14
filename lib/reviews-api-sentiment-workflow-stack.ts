@@ -78,6 +78,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
     this.buildReviewsTable();
     this.buildSentimentNotificationLambda();
     this.buildReviewWorkflow();
+    this.buildWorkflowTrigger();
   }
 
   /**
@@ -279,7 +280,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
     const workflowDefinition = this.detectSentimentTask
       .next(this.generateUlidTask)
       .next(this.saveReviewTask)
-      .next(this.sentimentNotificationTask);
+      .next(this.sendNotificationChoice);
 
     // Instantiate the State Machine
     this.reviewWorkflow = new StateMachine(this, workflowId, {

@@ -48,6 +48,9 @@ export class ReviewsApiStack extends Stack {
     this.buildApi();
     this.buildEventBridgeRole();
     this.buildPutReviewMutation();
+    this.buildGetReviewQuery();
+    this.buildGetReviewsBySentimentQuery();
+    this.buildCfnOutput();
   }
 
   /**
