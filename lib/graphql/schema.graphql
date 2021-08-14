@@ -1,0 +1,37 @@
+enum SENTIMENT {
+  MIXED
+  NEGATIVE
+  NEUTRAL
+  POSITIVE
+} 
+
+type Review {
+  reviewId: String;
+  customerMessage: String;
+  sentiment: SENTIMENT
+}
+
+type PutReviewDetails {
+  EventId: String
+  ErrorMessage: String
+  ErrorCode: String
+}
+
+type PutReviewResult {
+  Entries: [PutReviewDetails]
+  FailedEntries: Int
+}
+
+type Mutation {
+  putReview(reviewText: String!): PutReviewResult
+}
+
+type Query {
+  getReview(reviewId: String!): Review
+  getReviewsBySentiment(sentiment: SENTIMENT!): [Review]
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}

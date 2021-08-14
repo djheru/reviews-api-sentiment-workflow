@@ -140,6 +140,17 @@ For our application, we will be using Step Functions to manage the following 4 t
 1. Save the review and sentiment in a database
 1. Send an email to support if the sentiment is negative
 
+### Serverless GraphQL API with AppSync
+
+AWS AppSync is a managed service to help develop GraphQL APIs by connecting to data sources such as the following:
+
+- DynamoDB
+- Lambda
+- AWS RDS
+- External HTTP endpoints
+
+In our application, we will be implementing one mutation, to save the review, and two queries, to retrieve a single review or a list of reviews by sentiment.
+
 This is a blank project for TypeScript development with CDK.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
