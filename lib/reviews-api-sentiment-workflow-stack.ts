@@ -67,7 +67,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    this.id = id;
+    this.id = id; // e.g. "ReviewsWorkflow"
     this.buildResources();
   }
 

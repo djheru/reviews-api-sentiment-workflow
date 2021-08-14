@@ -1,6 +1,7 @@
 import {
   FieldLogLevel,
   GraphqlApi,
+  KeyCondition,
   MappingTemplate,
   Schema,
 } from '@aws-cdk/aws-appsync';
@@ -36,7 +37,7 @@ export class ReviewsApiStack extends Stack {
   constructor(scope: Construct, id: string, props: ReviewsApiStackProps) {
     super(scope, id, props);
 
-    this.id = id;
+    this.id = id; // e.g. "ReviewsApi"
     this.reviewsTable = props.table;
     this.reviewsEventBus = props.eventBus;
 
@@ -53,7 +54,7 @@ export class ReviewsApiStack extends Stack {
    * Sets up the GraphQL API, using the schema referenced in the listed file
    */
   buildApi() {
-    const apiId = pascalCase(`${this.id}-api`);
+    const apiId = pascalCase(`${this.id}-gateway`);
     this.reviewsApi = new GraphqlApi(this, apiId, {
       name: apiId,
       schema: Schema.fromAsset(
@@ -115,6 +116,51 @@ export class ReviewsApiStack extends Stack {
       responseMappingTemplate: MappingTemplate.fromFile(
         join(__dirname, '..', 'templates', 'put-review-response.vtl')
       ),
+    });
+  }
+
+  /**
+   * Creates a resolver that retrieves a single review from the database by review ID
+   */
+  buildGetReviewQuery() {
+    const dataSourceId = pascalCase(`${this.id}-get-review-ds`);
+    const getReviewDynamoDBDataSource = this.reviewsApi.addDynamoDbDataSource(
+      dataSourceId,
+      this.reviewsTable
+    );
+
+    getReviewDynamoDBDataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'getReview',
+      requestMappingTemplate: MappingTemplate.dynamoDbGetItem(
+        'reviewId',
+        'reviewId'
+      ),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    });
+  }
+
+  /**
+   * Creates a resolver that retrieves a list of reviews by sentiment
+   */
+  buildGetReviewsBySentimentQuery() {
+    const getReviewsBySentimentDynamoDBDataSourceId = pascalCase(
+      `${this.id}-get-reviews-by-sentiment-ds`
+    );
+    const getReviewsBySentimentDynamoDBDataSource =
+      this.reviewsApi.addDynamoDbDataSource(
+        getReviewsBySentimentDynamoDBDataSourceId,
+        this.reviewsTable
+      );
+
+    getReviewsBySentimentDynamoDBDataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'getReviewsBySentiment',
+      requestMappingTemplate: MappingTemplate.dynamoDbQuery(
+        KeyCondition.eq('sentiment', 'sentiment'),
+        'ReviewsWorkflowReviewSentimentIndex' // Matching the GSI "indexName" property
+      ),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
     });
   }
 }
