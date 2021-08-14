@@ -13,7 +13,7 @@ import {
   Role,
   ServicePrincipal,
 } from '@aws-cdk/aws-iam';
-import { Construct, Stack, StackProps } from '@aws-cdk/core';
+import { CfnOutput, Construct, Stack, StackProps } from '@aws-cdk/core';
 import { pascalCase } from 'change-case';
 import { join } from 'path';
 
@@ -162,5 +162,16 @@ export class ReviewsApiStack extends Stack {
       ),
       responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
     });
+  }
+
+  /**
+   * Outputs the relevant invormation so that we can use the API
+   */
+  buildCfnOutput() {
+    new CfnOutput(this, 'reviewsApiUrl', { value: this.reviewsApi.graphqlUrl });
+    new CfnOutput(this, 'reviewsApiKey', {
+      value: this.reviewsApi.apiKey || '',
+    });
+    new CfnOutput(this, 'reviewsApiId', { value: this.reviewsApi.apiId });
   }
 }
