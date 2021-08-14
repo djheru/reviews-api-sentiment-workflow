@@ -1,4 +1,9 @@
-import { FieldLogLevel, GraphqlApi, Schema } from '@aws-cdk/aws-appsync';
+import {
+  FieldLogLevel,
+  GraphqlApi,
+  MappingTemplate,
+  Schema,
+} from '@aws-cdk/aws-appsync';
 import { Table } from '@aws-cdk/aws-dynamodb';
 import { EventBus } from '@aws-cdk/aws-events';
 import {
@@ -41,6 +46,7 @@ export class ReviewsApiStack extends Stack {
   buildResources() {
     this.buildApi();
     this.buildEventBridgeRole();
+    this.buildPutReviewMutation();
   }
 
   /**
@@ -78,5 +84,37 @@ export class ReviewsApiStack extends Stack {
         actions: ['events:PutEvents'],
       })
     );
+  }
+
+  /**
+   * This creates an AppSync HTTP Data Source that invokes "PutEvent" actions
+   * on the EventBridge API, allowing us to create events without using a Lambda
+   */
+  buildPutReviewMutation() {
+    const endpoint = `https://events.${this.region}.amazonaws.com/`;
+    const signingRegion = this.region;
+    const signingServiceName = 'events';
+    const authorizationConfig = { signingRegion, signingServiceName };
+    const dataSourceId = pascalCase(`${this.id}-put-review-ds`);
+    const putReviewEventBridgeDataSource = this.reviewsApi.addHttpDataSource(
+      dataSourceId,
+      endpoint,
+      { authorizationConfig }
+    );
+
+    this.reviewsEventBus.grantPutEventsTo(
+      putReviewEventBridgeDataSource.grantPrincipal
+    );
+
+    putReviewEventBridgeDataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'putReview',
+      requestMappingTemplate: MappingTemplate.fromFile(
+        join(__dirname, '..', 'templates', 'put-review-request.vtl')
+      ),
+      responseMappingTemplate: MappingTemplate.fromFile(
+        join(__dirname, '..', 'templates', 'put-review-response.vtl')
+      ),
+    });
   }
 }

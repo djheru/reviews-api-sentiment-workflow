@@ -310,7 +310,7 @@ export class ReviewsApiSentimentWorkflowStack extends Stack {
       eventBus: this.reviewsEventBus,
       targets: [workflowTrigger],
       eventPattern: {
-        detailType: ['PutReview'], // This matches the value in request.vtl
+        detailType: ['PutReview'], // This matches the "DetailType" value in request.vtl
       },
     });
   }

@@ -153,6 +153,16 @@ AWS AppSync is a managed service to help develop GraphQL APIs by connecting to d
 
 In our application, we will be implementing one mutation, to save the review, and two queries, to retrieve a single review or a list of reviews by sentiment.
 
+### AppSync / EventBridge Direct Integration
+
+AWS exposes the EventBridge service as an HTTP API, so we can add events by making requests to the service from a GraphQL mutation resolver. When a reviews API user wants to post a new review, they will make a GraphQL `putReview` mutation request.
+
+Typically, you would store some data in a database in response to a GraphQL mutation, but in this case we are performing a `PutEvent` request on the EventBridge API.
+
+To define the shape of the request and response objects, we're using Velocity mapping templates. These are defined in `./templates/put-review-request.vtl` and `./templates/put-review-response.vtl`
+
+---
+
 This is a blank project for TypeScript development with CDK.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
