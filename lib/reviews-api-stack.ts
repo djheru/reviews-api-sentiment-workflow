@@ -1,6 +1,12 @@
 import { FieldLogLevel, GraphqlApi, Schema } from '@aws-cdk/aws-appsync';
 import { Table } from '@aws-cdk/aws-dynamodb';
 import { EventBus } from '@aws-cdk/aws-events';
+import {
+  Effect,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from '@aws-cdk/aws-iam';
 import { Construct, Stack, StackProps } from '@aws-cdk/core';
 import { pascalCase } from 'change-case';
 import { join } from 'path';
@@ -34,6 +40,7 @@ export class ReviewsApiStack extends Stack {
 
   buildResources() {
     this.buildApi();
+    this.buildEventBridgeRole();
   }
 
   /**
@@ -53,5 +60,23 @@ export class ReviewsApiStack extends Stack {
         fieldLogLevel: FieldLogLevel.ALL,
       },
     });
+  }
+
+  /**
+   * Assign permissions to the AppSync role to allow it to authenticate via IAM
+   * when invoking the PutEvent method on the EventBridge API
+   */
+  buildEventBridgeRole() {
+    const roleId = pascalCase(`${this.id}-appsync-eventbridge-role`);
+    const allowEventbridge = new Role(this, roleId, {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+    });
+    allowEventbridge.addToPolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        resources: ['*'],
+        actions: ['events:PutEvents'],
+      })
+    );
   }
 }
