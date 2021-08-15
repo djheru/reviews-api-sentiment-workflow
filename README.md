@@ -234,6 +234,39 @@ Typically, you would store some data in a database in response to a GraphQL muta
 
 To define the shape of the request and response objects, we're using Velocity mapping templates. These are defined in `./templates/put-review-request.vtl` and `./templates/put-review-response.vtl`
 
+## Example GraphQL Queries
+
+```graphql
+mutation PutReviewMutation {
+  putReview(
+    reviewText: "The experience was horrible, and the salesman had bad breath too."
+  ) {
+    FailedEntries
+    Entries {
+      ErrorCode
+      ErrorMessage
+      EventId
+    }
+  }
+}
+
+query GetReviewsBySentimentQuery {
+  getReviewsBySentiment(sentiment: NEGATIVE) {
+    customerMessage
+    reviewId
+    sentiment
+  }
+}
+
+query GetReviewQuery {
+  getReview(reviewId: "01AD1XR4DSWN6VCV95J96NB4N6") {
+    reviewId
+    customerMessage
+    sentiment
+  }
+}
+```
+
 ---
 
 ## Useful commands
@@ -244,6 +277,8 @@ To define the shape of the request and response objects, we're using Velocity ma
 - `cdk deploy` deploy this stack to your default AWS account/region
 - `cdk diff` compare deployed stack with current state
 - `cdk synth` emits the synthesized CloudFormation template
+
+---
 
 ## References
 
