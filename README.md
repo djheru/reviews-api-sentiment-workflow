@@ -1,6 +1,6 @@
 # Reviews API with Asynchronous Sentiment Analysis Workflow
 
-### [View the Accompanying Slideshow](https://docs.google.com/presentation/d/1m6Os6w9oc7nm9RUmxRRG9r7Uo4J1wvgckgq_Cr6jKbI/edit?usp=sharing)
+### [View the Accompanying Slideshow](https://docs.google.com/presentation/d/1m6Os6w9oc7nm9RUmxRRG9r7Uo4J1wvgckgq_Cr6jKbI/present?usp=sharing)
 
 ---
 
