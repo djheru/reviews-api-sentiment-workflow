@@ -61,45 +61,29 @@ The CDK toolkit is the foundation of this project, so you will definitely need i
 
 While not strictly necessary, the `eventbridge-cli` tool is very useful while working with EventBridge. It allows you to publish events or tail the events coming in on a given event bus, plus much more. It can be installed using the instructions here: [Github spezam/eventbridge-cli](https://github.com/spezam/eventbridge-cli)
 
-## Install Dependencies
+## Clone the Repository
 
 ```bash
-npm i
 
-# # Included Application Dependencies:
-# npm i -S \
-#   @aws-cdk/aws-appsync \
-#   @aws-cdk/aws-dynamodb \
-#   @aws-cdk/aws-events \
-#   @aws-cdk/aws-events-targets \
-#   @aws-cdk/aws-iam \
-#   @aws-cdk/aws-lambda \
-#   @aws-cdk/aws-lambda-nodejs \
-#   @aws-cdk/aws-logs \
-#   @aws-cdk/aws-stepfunctions \
-#   @aws-cdk/aws-stepfunctions-tasks \
-#   aws-lambda \
-#   aws-sdk \
-#   change-case \
-#   dotenv \
-#   ulid
+git clone git@github.com:djheru/reviews-api-sentiment-workflow.git
+cd reviews-api-sentiment-workflow
 
-# # Included Dev Dependencies
-# npm i -D \
-#   eslint \
-#   eslint-config-prettier \
-#   eslint-plugin-prettier \
-#   prettier
 ```
 
-## Configure the Notification Email
-
-The email address used as the notification recipient is specified in the `.env` file. There is an example file included for your convenience. To use:
+## Install Node Dependencies
 
 ```bash
+# Install AWS CDK
+npm i -g aws-cdk
+
+# Install Node dependencies
+npm install
+
+# Create environment config
 cp .env.example .env
 nano .env
-# Update the email sender and recipient fields with the real address
+# Make sure to pdate the email sender and recipient
+# fields with the real address
 ```
 
 As mentioned below, you will also need to verify the email address with AWS. To do so, you will need to log into your AWS console, navigate to [the SES management page -> Email Addresses ](https://console.aws.amazon.com/ses/home?region=us-east-1#verified-senders-email:) and select "Verify a New Email Address".
@@ -301,3 +285,11 @@ query GetReviewQuery {
   - Step Function Tasks: https://docs.aws.amazon.com/cdk/api/latest/docs/aws-stepfunctions-tasks-readme.html
   - Node.js Lambda Functions: https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-nodejs-readme.html
   - DynamoDB: https://docs.aws.amazon.com/cdk/api/latest/docs/aws-dynamodb-readme.html
+
+---
+
+## Destroy the Stack
+
+```
+cdk destroy
+```
