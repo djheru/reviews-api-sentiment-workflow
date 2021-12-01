@@ -225,10 +225,8 @@ To define the shape of the request and response objects, we're using Velocity ma
 ## Example GraphQL Queries
 
 ```graphql
-mutation PutReviewMutation {
-  putReview(
-    reviewText: "The experience was horrible, and the salesman had bad breath too."
-  ) {
+mutation PutReviewMutation($value: String!) {
+  putReview(reviewText: $value) {
     FailedEntries
     Entries {
       ErrorCode
@@ -238,16 +236,16 @@ mutation PutReviewMutation {
   }
 }
 
-query GetReviewsBySentimentQuery {
-  getReviewsBySentiment(sentiment: NEGATIVE) {
+query GetReviewsBySentimentQuery($value: SENTIMENT!) {
+  getReviewsBySentiment(sentiment: $value) {
     customerMessage
     reviewId
     sentiment
   }
 }
 
-query GetReviewQuery {
-  getReview(reviewId: "01AD1XR4DSWN6VCV95J96NB4N6") {
+query GetReviewQuery($value: String!) {
+  getReview(reviewId: $value) {
     reviewId
     customerMessage
     sentiment
